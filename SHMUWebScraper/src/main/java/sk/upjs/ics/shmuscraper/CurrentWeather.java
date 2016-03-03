@@ -109,7 +109,7 @@ public class CurrentWeather {
 	private void readIconInfoFromMap() throws Exception {
 		Document doc;
 		try {
-			doc = Jsoup.connect(CURRENT_WEATHER_TABLE_URL).get();
+			doc = Jsoup.connect(CURRENT_WEATHER_MAP_URL).get();
 		} catch (Exception e) {
 			System.err.println("Ziskanie obsahu z url " + CURRENT_WEATHER_MAP_URL + " sa nepodarilo.");
 			throw e;
@@ -120,7 +120,8 @@ public class CurrentWeather {
 			Elements iconLinks = mapOverlayUl.select("li > a");
 			for (Element iconLink : iconLinks) {
 				String href = iconLink.attr("href");
-				String iconSrc = iconLink.select("img").first().attr("src");
+				Element img = iconLink.select("img").first();
+				String iconSrc = (img != null) ? img.attr("src") : null;
 				// TODO kod ikony (v atribute src elementu img) prepojime so
 				// stanicou podla parametra ii v href
 			}
