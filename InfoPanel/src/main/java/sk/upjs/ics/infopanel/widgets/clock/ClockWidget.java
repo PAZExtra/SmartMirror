@@ -35,6 +35,7 @@ public class ClockWidget extends Widget {
 		timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 		setRefreshInterval(500);
 	}
+	
 
 	@Override
 	protected Node onCreateView() {
@@ -54,6 +55,7 @@ public class ClockWidget extends Widget {
 	@Override
 	protected void onRefresh() {
 		updateTime();
+		System.out.println(container.getHeight());
 	}
 
 	private void updateFontSize() {
@@ -64,5 +66,6 @@ public class ClockWidget extends Widget {
 	private void updateTime() {
 		LocalDateTime now = LocalDateTime.now();
 		timeLabel.setText(now.format(timeFormatter));
+		
 	}
 }
