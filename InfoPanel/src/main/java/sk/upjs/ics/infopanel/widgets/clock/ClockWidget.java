@@ -55,7 +55,7 @@ public class ClockWidget extends Widget {
 	@Override
 	protected void onRefresh() {
 		updateTime();
-		System.out.println(container.getHeight());
+		
 	}
 
 	private void updateFontSize() {
