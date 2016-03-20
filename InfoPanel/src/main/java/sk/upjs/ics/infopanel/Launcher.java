@@ -4,7 +4,7 @@ import sk.upjs.ics.infopanel.core.InfoPanelApplication;
 import sk.upjs.ics.infopanel.core.Layout;
 import sk.upjs.ics.infopanel.core.Layout.LayoutPosition;
 import sk.upjs.ics.infopanel.widgets.clock.ClockWidget;
-import sk.upjs.ics.infopanel.widgets.clock.WeatherWidget;
+import sk.upjs.ics.infopanel.widgets.weather.WeatherWidget;
 
 public class Launcher extends InfoPanelApplication {
 

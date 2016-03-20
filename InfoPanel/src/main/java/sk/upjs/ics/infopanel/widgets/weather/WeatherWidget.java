@@ -1,4 +1,4 @@
-package sk.upjs.ics.infopanel.widgets.clock;
+package sk.upjs.ics.infopanel.widgets.weather;
 
 import java.io.InputStream;
 import java.time.LocalDateTime;
@@ -134,6 +134,5 @@ public class WeatherWidget extends Widget {
 		Image background = new Image(URLImage,container.getWidth(),container.getHeight(),false,false);
 
 		weatherBackgroundImage.setImage(background);
-		
 	}
 }
