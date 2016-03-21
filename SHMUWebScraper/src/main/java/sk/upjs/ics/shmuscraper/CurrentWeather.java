@@ -3,8 +3,12 @@ package sk.upjs.ics.shmuscraper;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
+import java.util.regex.Pattern;
+
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.*;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class CurrentWeather {
@@ -23,13 +27,17 @@ public class CurrentWeather {
 	 * Zaznam o aktualnom stave na nejakej stanici
 	 */
 	public static class Station {
+
 		/**
 		 * Nazov stanice.
 		 */
 		public String name;
 		public Integer temperature;
+		public String windDirection;
 		public Integer windSpeed;
 		public Integer gustSpeed;
+		public String cloudiness;
+		public String weatherSpecification;
 
 		/**
 		 * Kod ikonky stavu pocasia (null, ak nie je definovany)
@@ -58,22 +66,30 @@ public class CurrentWeather {
 	 * @return true, ak sa aktualizacia podarila, false inak.
 	 */
 	public boolean update() {
+
 		dateTime = null;
 		stations.clear();
+
 		try {
 			readAndParseTable();
 			readIconInfoFromMap();
 			return true;
-		} catch (Exception e) {
+		}
+
+		catch (Exception e) {
 			return false;
 		}
 	}
 
 	private void readAndParseTable() throws Exception {
+
 		Document doc;
+
 		try {
 			doc = Jsoup.connect(CURRENT_WEATHER_TABLE_URL).get();
-		} catch (Exception e) {
+		}
+
+		catch (Exception e) {
 			System.err.println("Ziskanie obsahu z url " + CURRENT_WEATHER_TABLE_URL + " sa nepodarilo.");
 			throw e;
 		}
@@ -82,17 +98,31 @@ public class CurrentWeather {
 			Element mainContentElement = doc.getElementById("maincontent");
 
 			// Vydolujeme informaciu, z akeho datumu a casu su aktualne zaznamy
-			// TODO rozparsovat a nastavit dateTime tak, aby uchovaval cas z
-			// akeho mame informacie
 			String tableTitle = mainContentElement.select("h3").first().text();
+
+			findDateTime(tableTitle);
 
 			// Vydolujeme udaje z jednotlivych stanic
 			Element tbodyElement = mainContentElement.select("tbody").first();
+
 			for (Element trElement : tbodyElement.select("tr")) {
+
 				Elements cells = trElement.select("td");
+
+				int pocitadlo = 0;
+
 				Station station = new Station();
-				station.name = cells.get(0).text().trim();
-				// TODO dalsie vlasnosti
+
+				station.name = cells.get(pocitadlo++).text().trim();
+				station.temperature = getTemperatureAsInt(cells.get(pocitadlo++).text().trim());
+				station.windDirection = cells.get(pocitadlo++).text().trim();
+				station.windSpeed = getWindSpeedAsInt(cells.get(pocitadlo++).text().trim());
+				station.gustSpeed = getWindSpeedAsInt(cells.get(pocitadlo++).text().trim());
+				station.cloudiness = cells.get(pocitadlo++).text().trim();
+				station.weatherSpecification = cells.get(pocitadlo++).text().trim();
+
+				Elements tdElement = trElement.select("td > a");
+				station.iiCode = getIICodeAsInt(tdElement.attr("href"));
 
 				stations.add(station);
 			}
@@ -102,8 +132,6 @@ public class CurrentWeather {
 		}
 	}
 
-<<<<<<< HEAD
-=======
 	private Integer getIICodeAsInt(String link) {
 
 		try {
@@ -145,7 +173,7 @@ public class CurrentWeather {
 	private Integer getTemperatureAsInt(String teplota) {
 
 		try {
-			int indexGulicky = teplota.indexOf('�');
+			int indexGulicky = teplota.indexOf('°');
 
 			teplota = teplota.substring(0, indexGulicky).trim();
 
@@ -160,7 +188,7 @@ public class CurrentWeather {
 
 	private void findDateTime(String tableTitle) {
 
-		// Aktu�lny stav po�asia - 20.03.2016 - 21:00 SE�
+		// Aktuálny stav počasia - 20.03.2016 - 21:00 SEČ
 
 		try {
 			int den = 0;
@@ -195,13 +223,14 @@ public class CurrentWeather {
 		}
 	}
 
->>>>>>> origin/master
 	/**
 	 * Zaznamy stanic rozsirime o obrazkove kody stavu pocasia (iconCode).
-	 * Parovanie robime podla hodnoty ii v html.
+	 * Parsovanie robime podla hodnoty ii v html.
 	 */
 	private void readIconInfoFromMap() throws Exception {
+
 		Document doc;
+
 		try {
 			doc = Jsoup.connect(CURRENT_WEATHER_MAP_URL).get();
 		} catch (Exception e) {
@@ -211,18 +240,61 @@ public class CurrentWeather {
 
 		try {
 			Element mapOverlayUl = doc.getElementById("mainmap-v2");
+
 			Elements iconLinks = mapOverlayUl.select("li > a");
-			for (Element iconLink : iconLinks) {
+
+			for (int i = 1; i < iconLinks.size(); i = i + 2) {
+
+				Element iconLink = iconLinks.get(i);
 				String href = iconLink.attr("href");
 				Element img = iconLink.select("img").first();
 				String iconSrc = (img != null) ? img.attr("src") : null;
-				// TODO kod ikony (v atribute src elementu img) prepojime so
+
+				// kod ikony (v atribute src elementu img) prepojime so
 				// stanicou podla parametra ii v href
+				Integer iiCode = getIICodeAsInt(href);
+				Station station = getStationFromCode(iiCode);
+
+				if (station == null)
+					continue;
+
+				station.iconCode = getIconCodeAsInteger(iconSrc);
 			}
 		} catch (Exception e) {
 			System.err.println("Neocakavana struktura stranky " + CURRENT_WEATHER_MAP_URL + ".");
 			throw e;
 		}
+	}
+
+	private Integer getIconCodeAsInteger(String iconSrc) {
+
+		try {
+			int indexLomitka = iconSrc.lastIndexOf("/");
+
+			int indexBodky = iconSrc.lastIndexOf(".");
+
+			iconSrc = iconSrc.substring(indexLomitka + 1, indexBodky);
+
+			return Integer.parseInt(iconSrc);
+		}
+
+		catch (RuntimeException e) {
+			System.err.println("Nepodarilo sa ziskat kod ikonky. Zial...");
+		}
+
+		return null;
+	}
+
+	private Station getStationFromCode(Integer iiCode) {
+
+		if (iiCode == null)
+			return null;
+
+		for (Station station : stations)
+			if (station.iiCode.equals(iiCode))
+				return station;
+
+		return null;
 	}
 
 	public LocalDateTime getDateTime() {
