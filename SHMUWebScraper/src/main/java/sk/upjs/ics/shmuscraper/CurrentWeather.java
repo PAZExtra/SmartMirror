@@ -102,6 +102,100 @@ public class CurrentWeather {
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	private Integer getIICodeAsInt(String link) {
+
+		try {
+			int indexRovnasa = link.lastIndexOf("=");
+
+			if (link.endsWith("sk"))
+				return null;
+
+			link = link.substring(indexRovnasa + 1).trim();
+
+			return Integer.parseInt(link);
+
+		} catch (RuntimeException e) {
+			System.err.println("Nepodarilo sa ziskat II code, sme luzri");
+		}
+
+		return null;
+	}
+
+	private Integer getWindSpeedAsInt(String speed) {
+
+		try {
+			int indexM = speed.indexOf('m');
+
+			if (indexM == -1)
+				return null;
+
+			speed = speed.substring(0, indexM).trim();
+
+			return Integer.parseInt(speed);
+
+		} catch (RuntimeException e) {
+			System.err.println("Nepodarilo sa rozparsovat rychlost vetra, co je fakt smutne.");
+		}
+
+		return null;
+	}
+
+	private Integer getTemperatureAsInt(String teplota) {
+
+		try {
+			int indexGulicky = teplota.indexOf('�');
+
+			teplota = teplota.substring(0, indexGulicky).trim();
+
+			return Integer.parseInt(teplota);
+
+		} catch (RuntimeException e) {
+			System.err.println("Nepodarilo sa rozparsovat teplotu, co je fakt smutne.");
+		}
+
+		return null;
+	}
+
+	private void findDateTime(String tableTitle) {
+
+		// Aktu�lny stav po�asia - 20.03.2016 - 21:00 SE�
+
+		try {
+			int den = 0;
+			int mesiac = 0;
+			int rok = 0;
+			int hodina = 0;
+			int minuta = 0;
+
+			int indexPomlcky = tableTitle.indexOf("-");
+			int poslednyIndex = tableTitle.lastIndexOf("-");
+
+			String datum = tableTitle.substring(indexPomlcky + 2, poslednyIndex - 1);
+			String cas = tableTitle.substring(poslednyIndex + 2, poslednyIndex + 7);
+
+			try (Scanner sc = new Scanner(datum)) {
+				sc.useDelimiter("\\.");
+				den = sc.nextInt();
+				mesiac = sc.nextInt();
+				rok = sc.nextInt();
+			}
+
+			try (Scanner sc = new Scanner(cas)) {
+				sc.useDelimiter(Pattern.compile(":"));
+				hodina = sc.nextInt();
+				minuta = sc.nextInt();
+			}
+
+			dateTime = LocalDateTime.of(rok, mesiac, den, hodina, minuta);
+
+		} catch (RuntimeException e) {
+			System.err.println("Nepodarilo sa rozparsovat datum a cas.");
+		}
+	}
+
+>>>>>>> origin/master
 	/**
 	 * Zaznamy stanic rozsirime o obrazkove kody stavu pocasia (iconCode).
 	 * Parovanie robime podla hodnoty ii v html.

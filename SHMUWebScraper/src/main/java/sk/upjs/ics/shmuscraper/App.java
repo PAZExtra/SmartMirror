@@ -7,13 +7,9 @@ import sk.upjs.ics.shmuscraper.CurrentWeather.Station;
  *
  */
 public class App {
-	
 	public static void main(String[] args) {
-		
 		CurrentWeather weather = new CurrentWeather();
-		
 		weather.update();
-		
 		for (Station s : weather.getStations()) {
 			System.out.println(s.name);
 		}
