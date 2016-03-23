@@ -11,7 +11,8 @@ public class App {
 		CurrentWeather weather = new CurrentWeather();
 		weather.update();
 		for (Station s : weather.getStations()) {
-			System.out.println(s.name);
+			weather.saveKosiceToFile();
+			weather.saveToFile();
 		}
 	}
 }

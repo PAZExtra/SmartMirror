@@ -1,5 +1,8 @@
 package sk.upjs.ics.shmuscraper;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,14 +43,28 @@ public class CurrentWeather {
 		public String weatherSpecification;
 
 		/**
-		 * Kod ikonky stavu pocasia (null, ak nie je definovany)
+		 * Kod ikonky stavu pocasia (null, ak nie je definovany) TO DO
+		 * rozhodnut, ci je vobec potrebny
 		 */
 		public Integer iconCode;
+
+		/**
+		 * Konkretny odkaz na stranku s obrazkom, staci len pridat prefix
+		 * www.shmu.sk
+		 */
+		public String iconLink;
 
 		/**
 		 * Interny identifikator stanice (vyskytuje sa v URL ako parameter ii)
 		 */
 		private Integer iiCode;
+
+		@Override
+		public String toString() {
+
+			return name + "\t" + temperature + "\t"+ windDirection+ "\t" + windSpeed+ "\t" + gustSpeed+ "\t" + cloudiness+ "\t"
+					+ iconLink+ "\t" + weatherSpecification;
+		}
 	}
 
 	/**
@@ -258,6 +275,8 @@ public class CurrentWeather {
 				if (station == null)
 					continue;
 
+				station.iconLink = iconSrc;
+
 				station.iconCode = getIconCodeAsInteger(iconSrc);
 			}
 		} catch (Exception e) {
@@ -295,6 +314,55 @@ public class CurrentWeather {
 				return station;
 
 		return null;
+	}
+
+	/**
+	 * Poradie vypisu si prezrite v metode toString vo vnutornej triede Station
+	 */
+	public void saveToFile() {
+
+		File stanice = new File("stanice.txt");
+		PrintWriter pw = null;
+
+		try {
+			pw = new PrintWriter(stanice);
+
+			for (Station station : stations) {
+				pw.println(station.toString());
+			}
+
+		} catch (FileNotFoundException e) {
+			throw new RuntimeException("Nepodarilo sa zapisat stanice do suboru");
+			
+		} finally {
+			if (pw != null)
+				pw.close();
+		}
+	}
+
+	public void saveKosiceToFile() {
+
+		for (Station station : stations) {
+
+			if (station.name.equals("Košice")) {
+
+				File kosice = new File("kosice.txt");
+				PrintWriter pw = null;
+
+				try {
+					pw = new PrintWriter(kosice);
+					pw.println(station);
+
+				} catch (FileNotFoundException e) {
+					throw new RuntimeException("Kosice sa nepodarilo zapisat do suboru");
+					
+				} finally {
+					if (pw != null)
+						pw.close();
+				}
+			}
+
+		}
 	}
 
 	public LocalDateTime getDateTime() {
