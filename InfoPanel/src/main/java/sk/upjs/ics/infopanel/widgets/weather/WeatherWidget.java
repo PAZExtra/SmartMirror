@@ -1,8 +1,14 @@
 package sk.upjs.ics.infopanel.widgets.weather;
 
-import java.io.InputStream;
+
+import java.awt.Color;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Scanner;
+
+import javax.imageio.ImageIO;
 
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
@@ -12,19 +18,18 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import sk.upjs.ics.infopanel.core.Widget;
 
 public class WeatherWidget extends Widget {
 
-	//cely tento widget som sa snazil dokopirovat od androidu (nieco take ako je na linku)
-	// http://droidviews.com/wp-content/uploads/2013/03/galaxy-s3-weather-widget1.jpg
-	
-	@FXML
-	private Label weatherTimeLabel;
 
 	@FXML
-	private Label weatherDateLabel;
+	private Label weatherStationNameLabel;
+
+	@FXML
+	private Label weatherDirectionWindLabel;
 
 	@FXML
 	private Label weatherTemperatureLabel;
@@ -36,103 +41,115 @@ public class WeatherWidget extends Widget {
 	private ImageView weatherIconImage;
 
 	@FXML
-	private ImageView weatherBackgroundImage;
+	private Label weatherTitleLabel;
 
-	/**
-	 * Format casu.
-	 */
-	private DateTimeFormatter timeFormatter;
-	private DateTimeFormatter dateFormatter;
+	
+	private String urlFile;
+	
+	//jednotlive udaje zaradom ako su zapisane v txt
+	private String nameStation;
+	private String actualTemperature;
+	private String directionWind;
+	private String neznamyUdaj1;
+	private String neznamyUdaj2;
+	private String actualStatus;
+	private String urlIcon;
+	
+
+	
 
 	/**
 	 * Referencia na view widgetu.
 	 */
 	private Pane container;
 
+	public WeatherWidget(String urlFile) {
+	this.urlFile = urlFile;	
+	}
+	
+	
 	@Override
 	protected void onInitialize() {
-		timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
-		dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-
-		setRefreshInterval(500);
+		// kazdu minutu spravy refresh
+		setRefreshInterval(60000);
 	}
 
 	@Override
 	protected Node onCreateView() {
 		container = (Pane) loadFxmlResource("WeatherWidget.fxml");
+
+		container.setStyle("-fx-background-color: black; -fx-text-fill: white;");
 		
-		container.setStyle("-fx-background-color: white;");
 		container.heightProperty().addListener(new InvalidationListener() {
 			public void invalidated(Observable observable) {
-				updateFontSize();
+				updateFont();
 			}
 		});
-		
-		updateFontSize();
+		refreshInfo();
+		updateFont();
 		onRefresh();
 		return container;
 	}
 
 	@Override
 	protected void onRefresh() {
-		updateBackground();
-		updateTime();
-		updateDate();
+
+		refreshInfo();
 		updateIcon();
 		updateTemperature();
 		updateStatus();
-		
-		
+		updateNameStation();
+		updateWind();
+
 	}
 
-	private void updateFontSize() {
-		String font = getClass().getResource("FogtwoNo5.ttf").toExternalForm();
+	private void updateFont() {
+		String fontString = getClass().getResource("FogtwoNo5.ttf").toExternalForm();
 		double size = container.getHeight() / 10;
-		weatherTimeLabel.setFont(Font.loadFont(font, size));
-		weatherDateLabel.setFont(Font.loadFont(font, size));
-		weatherStatusLabel.setFont(Font.loadFont(font, size));
-		weatherTemperatureLabel.setFont(Font.loadFont(font, size));
-
-	}
-
-	private void updateTime() {
-		LocalDateTime now = LocalDateTime.now();
-		weatherTimeLabel.setText(now.format(timeFormatter));
-	}
-
-	private void updateDate() {
-		LocalDateTime now = LocalDateTime.now();
-		weatherDateLabel.setText(now.format(dateFormatter));
-	}
-
-	private void updateIcon() {
-		// tato url sa nastavi predpokladam podla nejakeho gettera od misa podla
-		// aktualneho pocasia
-		String URLImage = "http://www.shmu.sk/img/pocasie/pocasie2/1.gif";
-		Image icon = new Image(URLImage);
+		Font font = Font.loadFont(fontString, size);
+		weatherStationNameLabel.setFont(font);
+		weatherDirectionWindLabel.setFont(font);
+		weatherStatusLabel.setFont(font);
+		weatherTemperatureLabel.setFont(font);
+		weatherTitleLabel.setFont(font);
 		
-		weatherIconImage.setImage(icon);
+	}
+
+	private void refreshInfo() {
+		try (Scanner skener = new Scanner(new File(urlFile))) {
+			nameStation = skener.next();
+			actualTemperature = skener.next();
+			directionWind = skener.next();
+			neznamyUdaj1 = skener.next();
+			neznamyUdaj2 = skener.next();
+			actualStatus = skener.next();
+			urlIcon = skener.next();
+
+		} catch (Exception e) {
+			System.out.println("nepodarilo sa nacitat subor");
+		}
+
+	}
+
+	private void updateIcon(){
+		String s = "."+urlIcon.replace('/', '\\');
+		System.out.println(s);
+		File file = new File(s);
+		Image image = new Image(file.toURI().toString());
+		weatherIconImage.setImage(image);
 	}
 
 	private void updateTemperature() {
-		// tato teplota sa tiez zrejme nastaci podla nejakeho gettera od misa
-		String actualTemperature = "20";
-		actualTemperature += " °C";
 		weatherTemperatureLabel.setText(actualTemperature);
 	}
 
 	private void updateStatus() {
-		// status sa ma nastavit podla teploty??
-		// ze napriklad ak je medzi 10-20 °C tak je polooblacno??
-		// alebo tiez nejaky getter od misa co vrati aktualny status??
-		String actualStatus = "slnečno";
 		weatherStatusLabel.setText(actualStatus);
 	}
-	
-	private void updateBackground(){
-		String URLImage = "https://t1.ftcdn.net/jpg/00/61/98/06/240_F_61980602_XRRlIjuVusgoaN7MbVJHL4mOgToYEm8b.jpg";
-		Image background = new Image(URLImage,container.getWidth(),container.getHeight(),false,false);
-
-		weatherBackgroundImage.setImage(background);
+	private void updateWind() {
+		weatherDirectionWindLabel.setText("Smer vetra: "+directionWind);
+	}
+	private void updateNameStation() {
+		weatherStationNameLabel.setText(nameStation);
 	}
 }
