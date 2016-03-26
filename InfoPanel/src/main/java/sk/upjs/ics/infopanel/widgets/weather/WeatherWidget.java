@@ -113,12 +113,6 @@ public class WeatherWidget extends Widget {
 		weatherTemperatureLabel.setFont(font);
 		weatherTitleLabel.setFont(font);
 		
-		String whiteColor = "-fx-color: white";
-		weatherStationNameLabel.setStyle(whiteColor);
-		weatherDirectionWindLabel.setStyle(whiteColor);
-		weatherStatusLabel.setStyle(whiteColor);
-		weatherTemperatureLabel.setStyle(whiteColor);
-		weatherTitleLabel.setStyle(whiteColor);
 	}
 
 	private void refreshInfo() {

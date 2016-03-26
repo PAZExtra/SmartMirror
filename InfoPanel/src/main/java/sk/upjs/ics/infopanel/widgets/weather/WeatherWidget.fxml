@@ -12,12 +12,12 @@
   <children>
     <GridPane alignment="CENTER" gridLinesVisible="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="0.0" minWidth="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <children>
-        <Label fx:id="weatherTitle" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Pocasie:" textFill="BLACK" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+        <Label fx:id="weatherTitleLabel" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Pocasie:" textFill="WHITE" GridPane.columnIndex="0" GridPane.rowIndex="0" />
         <ImageView id="weatherBackgroundImage" fx:id="weatherIconImage" fitHeight="0.0" fitWidth="0.0" pickOnBounds="true" preserveRatio="true" rotate="0.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-        <Label fx:id="weatherStationNameLabel" alignment="CENTER" text="mesto" textFill="BLACK" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-        <Label fx:id="weatherStatusLabel" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="polooblačno" textFill="BLACK" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-        <Label fx:id="weatherTemperatureLabel" alignment="CENTER" contentDisplay="LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="0 °C" textFill="BLACK" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-        <Label fx:id="weatherDirectionWindLabel" alignment="CENTER" contentDisplay="LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="smer vetra:" textFill="BLACK" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+        <Label fx:id="weatherStationNameLabel" alignment="CENTER" text="mesto" textFill="WHITE" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+        <Label fx:id="weatherStatusLabel" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="polooblačno" textFill="WHITE" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+        <Label fx:id="weatherTemperatureLabel" alignment="CENTER" contentDisplay="LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="0 °C" textFill="WHITE" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+        <Label fx:id="weatherDirectionWindLabel" alignment="CENTER" contentDisplay="LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="smer vetra:" textFill="WHITE" GridPane.columnIndex="0" GridPane.rowIndex="5" />
       </children>
       <columnConstraints>
         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="-1.0" />
