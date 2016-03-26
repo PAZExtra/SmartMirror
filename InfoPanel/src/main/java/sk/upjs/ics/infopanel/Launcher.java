@@ -25,6 +25,6 @@ public class Launcher extends InfoPanelApplication {
 		addLayout("basic", basicLaout);
 		setInitialLayout("basic");
 
-		setFullscreen(true);
+		//setFullscreen(true);
 	}
 }
