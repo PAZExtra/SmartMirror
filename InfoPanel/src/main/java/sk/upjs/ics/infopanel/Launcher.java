@@ -15,11 +15,11 @@ public class Launcher extends InfoPanelApplication {
 	@Override
 	protected void configure() {
 		addWidget("clock", new ClockWidget());
-
-		addWidget("weather", new WeatherWidget());
+		String kosiceTxt = "C:\\GitHub\\SmartMirror\\SHMUWebScraper\\kosice.txt";
+		addWidget("weather", new WeatherWidget(kosiceTxt));
 
 		Layout basicLaout = new Layout(5, 5);
-		
+
 		basicLaout.addWidget("clock", new LayoutPosition(3, 0, 2, 1));
 		basicLaout.addWidget("weather", new LayoutPosition(1, 2, 3, 2));
 		addLayout("basic", basicLaout);

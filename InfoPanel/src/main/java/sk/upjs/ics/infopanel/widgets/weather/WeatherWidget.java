@@ -1,8 +1,10 @@
 package sk.upjs.ics.infopanel.widgets.weather;
 
+import java.io.File;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Scanner;
 
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
@@ -17,9 +19,10 @@ import sk.upjs.ics.infopanel.core.Widget;
 
 public class WeatherWidget extends Widget {
 
-	//cely tento widget som sa snazil dokopirovat od androidu (nieco take ako je na linku)
+	// cely tento widget som sa snazil dokopirovat od androidu (nieco take ako
+	// je na linku)
 	// http://droidviews.com/wp-content/uploads/2013/03/galaxy-s3-weather-widget1.jpg
-	
+
 	@FXML
 	private Label weatherTimeLabel;
 
@@ -38,6 +41,19 @@ public class WeatherWidget extends Widget {
 	@FXML
 	private ImageView weatherBackgroundImage;
 
+	
+	private String urlFile;
+	
+	//jednotlive udaje zaradom ako su zapisane v txt
+	private String nameStation;
+	private String actualTemperature;
+	private String directionWind;
+	private String neznamyUdaj1;
+	private String neznamyUdaj2;
+	private String actualStatus;
+	private String urlIcon;
+	
+
 	/**
 	 * Format casu.
 	 */
@@ -49,25 +65,30 @@ public class WeatherWidget extends Widget {
 	 */
 	private Pane container;
 
+	public WeatherWidget(String urlFile) {
+	this.urlFile = urlFile;	
+	}
+	
+	
 	@Override
 	protected void onInitialize() {
 		timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 		dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-
-		setRefreshInterval(500);
+		// kazdu minutu spravy refresh
+		setRefreshInterval(60000);
 	}
 
 	@Override
 	protected Node onCreateView() {
 		container = (Pane) loadFxmlResource("WeatherWidget.fxml");
-		
-		container.setStyle("-fx-background-color: white;");
+
+		container.setStyle("-fx-background-color: black;");
 		container.heightProperty().addListener(new InvalidationListener() {
 			public void invalidated(Observable observable) {
 				updateFontSize();
 			}
 		});
-		
+		refreshInfo();
 		updateFontSize();
 		onRefresh();
 		return container;
@@ -75,14 +96,19 @@ public class WeatherWidget extends Widget {
 
 	@Override
 	protected void onRefresh() {
-		updateBackground();
-		updateTime();
-		updateDate();
+
+		/*
+		 * System.out.println(nameStation);
+		 * System.out.println(actualTemperature);
+		 * System.out.println(directionWind); System.out.println(neznamyUdaj1);
+		 * System.out.println(neznamyUdaj2); System.out.println(actualStatus);
+		 * System.out.println(urlIcon);
+		 */
+		refreshInfo();
 		updateIcon();
 		updateTemperature();
 		updateStatus();
-		
-		
+
 	}
 
 	private void updateFontSize() {
@@ -95,29 +121,37 @@ public class WeatherWidget extends Widget {
 
 	}
 
-	private void updateTime() {
-		LocalDateTime now = LocalDateTime.now();
-		weatherTimeLabel.setText(now.format(timeFormatter));
-	}
+	private void refreshInfo() {
+		try (Scanner skener = new Scanner(new File(urlFile))) {
+			nameStation = skener.next();
+			actualTemperature = skener.next();
+			directionWind = skener.next();
+			neznamyUdaj1 = skener.next();
+			neznamyUdaj2 = skener.next();
+			actualStatus = skener.next();
+			urlIcon = skener.next();
 
-	private void updateDate() {
-		LocalDateTime now = LocalDateTime.now();
-		weatherDateLabel.setText(now.format(dateFormatter));
+		} catch (Exception e) {
+			System.out.println("nepodarilo sa nacitat subor");
+		}
+
 	}
 
 	private void updateIcon() {
 		// tato url sa nastavi predpokladam podla nejakeho gettera od misa podla
 		// aktualneho pocasia
-		String URLImage = "http://www.shmu.sk/img/pocasie/pocasie2/1.gif";
-		Image icon = new Image(URLImage);
 		
+		String s = "C:\\GitHub\\SmartMirror\\InfoPanel"+ urlIcon.replace('/', '\\');
+		System.out.println(new File(".").getAbsolutePath());
+		System.out.println(s);
+		Image icon = new Image(s);
+
 		weatherIconImage.setImage(icon);
 	}
 
 	private void updateTemperature() {
 		// tato teplota sa tiez zrejme nastaci podla nejakeho gettera od misa
-		String actualTemperature = "20";
-		actualTemperature += " °C";
+
 		weatherTemperatureLabel.setText(actualTemperature);
 	}
 
@@ -125,14 +159,8 @@ public class WeatherWidget extends Widget {
 		// status sa ma nastavit podla teploty??
 		// ze napriklad ak je medzi 10-20 °C tak je polooblacno??
 		// alebo tiez nejaky getter od misa co vrati aktualny status??
-		String actualStatus = "slnečno";
+
 		weatherStatusLabel.setText(actualStatus);
 	}
-	
-	private void updateBackground(){
-		String URLImage = "https://t1.ftcdn.net/jpg/00/61/98/06/240_F_61980602_XRRlIjuVusgoaN7MbVJHL4mOgToYEm8b.jpg";
-		Image background = new Image(URLImage,container.getWidth(),container.getHeight(),false,false);
 
-		weatherBackgroundImage.setImage(background);
-	}
 }
