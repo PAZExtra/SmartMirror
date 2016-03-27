@@ -133,14 +133,14 @@ public class Station {
 
 			Station s = new Station();
 
-			s.name = sc.next();
-			s.temperature = StringUtilities.parseString(sc.next());
-			s.windDirection = sc.next();
-			s.windSpeed = StringUtilities.parseString(sc.next());
-			s.gustSpeed = StringUtilities.parseString(sc.next());
-			s.cloudiness = sc.next();
-			s.iconLink = sc.next();
-			s.weatherSpecification = sc.next();
+			s.name = StringUtilities.parseStringToNull(sc.next());
+			s.temperature = StringUtilities.parseStringToInt(sc.next());
+			s.windDirection = StringUtilities.parseStringToNull(sc.next());
+			s.windSpeed = StringUtilities.parseStringToInt(sc.next());
+			s.gustSpeed = StringUtilities.parseStringToInt(sc.next());
+			s.cloudiness = StringUtilities.parseStringToNull(sc.next());
+			s.iconLink = StringUtilities.parseStringToNull(sc.next());
+			s.weatherSpecification = StringUtilities.parseStringToNull(sc.next());
 
 			return s;
 

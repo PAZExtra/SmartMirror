@@ -15,6 +15,8 @@ public class App {
 		for (Station station : weather.getStations()) {
 			System.out.println(station);
 		}
+		
+		System.out.println(weather.getDateTime());
 
 	}
 }

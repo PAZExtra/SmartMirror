@@ -5,7 +5,7 @@ public class StringUtilities {
 	private StringUtilities() {
 	}
 
-	public static Integer parseString(String s) {
+	public static Integer parseStringToInt(String s) {
 
 		if (s.equals("null"))
 			return null;
@@ -22,6 +22,14 @@ public class StringUtilities {
 	public static String parseEmptyStringToNull(String s) {
 
 		if (s.isEmpty())
+			return null;
+
+		return s;
+	}
+
+	public static String parseStringToNull(String s) {
+
+		if (s.equals("null"))
 			return null;
 
 		return s;
