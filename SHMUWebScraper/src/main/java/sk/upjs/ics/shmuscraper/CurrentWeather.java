@@ -1,13 +1,7 @@
 package sk.upjs.ics.shmuscraper;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
-import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -27,46 +21,6 @@ public class CurrentWeather {
 	public static final String CURRENT_WEATHER_MAP_URL = "http://www.shmu.sk/sk/?page=1&id=meteo_gapocasie_sk";
 
 	/**
-	 * Zaznam o aktualnom stave na nejakej stanici
-	 */
-	public static class Station {
-
-		/**
-		 * Nazov stanice.
-		 */
-		public String name;
-		public Integer temperature;
-		public String windDirection;
-		public Integer windSpeed;
-		public Integer gustSpeed;
-		public String cloudiness;
-		public String weatherSpecification;
-
-		/**
-		 * Kod ikonky stavu pocasia (null, ak nie je definovany) TO DO
-		 * rozhodnut, ci je vobec potrebny
-		 */
-		public Integer iconCode;
-
-		/**
-		 * Konkretny odkaz na stranku s obrazkom, staci len pridat prefix
-		 * www.shmu.sk
-		 */
-		public String iconLink;
-
-		/**
-		 * Interny identifikator stanice (vyskytuje sa v URL ako parameter ii)
-		 */
-		private Integer iiCode;
-
-		@Override
-		public String toString() {
-			return name + "\t" + temperature + "\t" + windDirection + "\t" + windSpeed + "\t" + gustSpeed + "\t"
-					+ cloudiness + "\t" + iconLink + "\t" + weatherSpecification;
-		}
-	}
-
-	/**
 	 * Datum a cas, ktoreho stav zachycuje aktualne pocasie.
 	 */
 	private LocalDateTime dateTime;
@@ -74,7 +28,7 @@ public class CurrentWeather {
 	/**
 	 * Zoznam s aktualnym pocasim v jednotlivych staniciach
 	 */
-	private final List<Station> stations = new ArrayList<>();
+	private final Stations stanice = new Stations();
 
 	/**
 	 * Aktualizuje stav pocasia a vrati, ci sa aktualizacia podarila.
@@ -84,7 +38,7 @@ public class CurrentWeather {
 	public boolean update() {
 
 		dateTime = null;
-		stations.clear();
+		stanice.clear();
 
 		try {
 			readAndParseTable();
@@ -114,33 +68,32 @@ public class CurrentWeather {
 			Element mainContentElement = doc.getElementById("maincontent");
 
 			// Vydolujeme informaciu, z akeho datumu a casu su aktualne zaznamy
-			String tableTitle = mainContentElement.select("h3").first().text();
-
-			findDateTime(tableTitle);
+			findDateTime(mainContentElement.select("h3").first().text());
 
 			// Vydolujeme udaje z jednotlivych stanic
-			Element tbodyElement = mainContentElement.select("tbody").first();
+			Elements trElements = mainContentElement.select("tbody").first().select("tr");
 
-			for (Element trElement : tbodyElement.select("tr")) {
-
-				Elements cells = trElement.select("td");
-
-				int pocitadlo = 0;
+			for (Element trElement : trElements) {
 
 				Station station = new Station();
 
-				station.name = cells.get(pocitadlo++).text().trim();
-				station.temperature = getTemperatureAsInt(cells.get(pocitadlo++).text().trim());
-				station.windDirection = cells.get(pocitadlo++).text().trim();
-				station.windSpeed = getWindSpeedAsInt(cells.get(pocitadlo++).text().trim());
-				station.gustSpeed = getWindSpeedAsInt(cells.get(pocitadlo++).text().trim());
-				station.cloudiness = cells.get(pocitadlo++).text().trim();
-				station.weatherSpecification = cells.get(pocitadlo++).text().trim();
+				String iiCode = trElement.select("a").first().attr("href");
 
-				Element aElement = trElement.select("a").first();
-				station.iiCode = getIICodeAsInt(aElement.attr("href"));
+				station.setIiCode(getIICodeAsInt(iiCode));
 
-				stations.add(station);
+				Elements cells = trElement.select("td");
+
+				int i = 0;
+
+				station.setName(StringUtilities.parseEmptyStringToNull(cells.get(i++).text()));
+				station.setTemperature(getTemperatureAsInt(cells.get(i++).text()));
+				station.setWindDirection(StringUtilities.parseEmptyStringToNull(cells.get(i++).text()));
+				station.setWindSpeed(getWindSpeedAsInt(cells.get(i++).text()));
+				station.setGustSpeed(getWindSpeedAsInt(cells.get(i++).text()));
+				station.setCloudiness(StringUtilities.parseEmptyStringToNull(cells.get(i++).text()));
+				station.setWeatherSpecification(StringUtilities.parseEmptyStringToNull(cells.get(i++).text()));
+
+				stanice.addStation(station);
 			}
 		} catch (Exception e) {
 			System.err.println("Neocakavana struktura stranky " + CURRENT_WEATHER_TABLE_URL + ".");
@@ -164,27 +117,23 @@ public class CurrentWeather {
 		}
 
 		try {
-			Element mapOverlayUl = doc.getElementById("mainmap-v2");
 
-			Elements iconLinks = mapOverlayUl.select("li > a");
+			Elements iconLinks = doc.getElementById("mainmap-v2").select("a");
 
 			for (int i = 1; i < iconLinks.size(); i = i + 2) {
 
 				Element iconLink = iconLinks.get(i);
-				String href = iconLink.attr("href");
-				Element img = iconLink.select("img").first();
-				String iconSrc = (img != null) ? img.attr("src") : null;
 
-				// kod ikony (v atribute src elementu img) prepojime so
-				// stanicou podla parametra ii v href
-				Integer iiCode = getIICodeAsInt(href);
-				Station station = getStationFromCode(iiCode);
+				Integer iiCode = getIICodeAsInt(iconLink.attr("href"));
+
+				Station station = stanice.getStationFromCode(iiCode);
 
 				if (station == null)
 					continue;
 
-				station.iconLink = iconSrc;
-				station.iconCode = getIconCodeAsInteger(iconSrc);
+				String linkOfIcon = "www.shmu.sk" + iconLink.select("img").attr("src");
+
+				station.setIconLink(linkOfIcon);
 			}
 		} catch (Exception e) {
 			System.err.println("Neocakavana struktura stranky " + CURRENT_WEATHER_MAP_URL + ".");
@@ -217,7 +166,7 @@ public class CurrentWeather {
 			}
 
 			try (Scanner sc = new Scanner(cas)) {
-				sc.useDelimiter(Pattern.compile(":"));
+				sc.useDelimiter(":");
 				hodina = sc.nextInt();
 				minuta = sc.nextInt();
 			}
@@ -233,9 +182,6 @@ public class CurrentWeather {
 
 		try {
 			int indexRovnasa = link.lastIndexOf("=");
-
-			if (link.endsWith("sk"))
-				return null;
 
 			link = link.substring(indexRovnasa + 1).trim();
 
@@ -283,76 +229,15 @@ public class CurrentWeather {
 		return null;
 	}
 
-	private Integer getIconCodeAsInteger(String iconSrc) {
-
-		try {
-			int indexLomitka = iconSrc.lastIndexOf("/");
-
-			int indexBodky = iconSrc.lastIndexOf(".");
-
-			iconSrc = iconSrc.substring(indexLomitka + 1, indexBodky);
-
-			return Integer.parseInt(iconSrc);
-		}
-
-		catch (RuntimeException e) {
-			System.err.println("Nepodarilo sa ziskat kod ikonky.");
-		}
-
-		return null;
-	}
-
-	private Station getStationFromCode(Integer iiCode) {
-
-		if (iiCode == null)
-			return null;
-
-		for (Station station : stations)
-			if (station.iiCode.equals(iiCode))
-				return station;
-
-		return null;
-	}
-
-	/**
-	 * Poradie vypisu si prezrite v metode toString vo vnutornej triede Station
-	 */
-	public void saveToFile() {
-
-		File stanice = new File("stanice.txt");
-
-		try (PrintWriter pw = new PrintWriter(stanice)) {
-
-			for (Station station : stations)
-				pw.println(station.toString());
-
-		} catch (FileNotFoundException e) {
-			throw new RuntimeException("Nepodarilo sa zapisat stanice do suboru");
-		}
-	}
-
-	public void saveKosiceToFile() {
-
-		for (Station station : stations) {
-
-			if (station.name.equals("Košice")) {
-
-				File kosice = new File("kosice.txt");
-
-				try (PrintWriter pw = new PrintWriter(kosice)) {
-					pw.println(station);
-				} catch (FileNotFoundException e) {
-					throw new RuntimeException("Kosice sa nepodarilo zapisat do suboru");
-				}
-			}
-		}
-	}
-
 	public LocalDateTime getDateTime() {
 		return dateTime;
 	}
 
-	public List<Station> getStations() {
-		return stations;
+	public Stations getStations() {
+		return stanice;
+	}
+
+	public Station getKosice() {
+		return stanice.getByName("Košice");
 	}
 }
