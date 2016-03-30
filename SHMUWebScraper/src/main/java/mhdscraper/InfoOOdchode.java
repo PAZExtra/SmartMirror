@@ -1,5 +1,6 @@
 package mhdscraper;
 
+import java.time.Duration;
 import java.time.LocalTime;
 
 public class InfoOOdchode {
@@ -32,8 +33,16 @@ public class InfoOOdchode {
 		this.odchod = odchod;
 	}
 
+	public Long getMinutesToGo() {
+
+		if (LocalTime.now().isAfter(odchod))
+			return null;
+
+		return Duration.between(LocalTime.now(), odchod).toMinutes();
+	}
+
 	@Override
 	public String toString() {
-		return linka + "\t" + smer + "\t" + odchod;
+		return linka + "\t" + smer + "\t" + odchod + "\t" + getMinutesToGo();
 	}
 }
