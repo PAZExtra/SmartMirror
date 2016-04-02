@@ -2,6 +2,8 @@ package sk.upjs.ics.shmuscraper;
 
 import java.util.Scanner;
 
+import sk.upjs.ics.utilities.StringUtilities;
+
 public class Station {
 
 	/**

@@ -1,5 +1,6 @@
 package sk.upjs.ics.shmuscraper;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -7,6 +8,8 @@ import java.util.List;
 public class Stations implements Iterable<Station> {
 
 	private List<Station> stations = new ArrayList<>();
+
+	private LocalDateTime casAktualizacie;
 
 	Stations() {
 	}
@@ -17,6 +20,15 @@ public class Stations implements Iterable<Station> {
 
 	void clear() {
 		stations.clear();
+		casAktualizacie = null;
+	}
+
+	void setCasAktualizacie(LocalDateTime casAktualizacie2) {
+		this.casAktualizacie = casAktualizacie2;
+	}
+
+	public LocalDateTime getCasAktualizacie() {
+		return casAktualizacie;
 	}
 
 	Station getStationFromCode(Integer iiCode) {
@@ -38,11 +50,15 @@ public class Stations implements Iterable<Station> {
 	}
 
 	public List<Station> getAllStations() {
-		return stations;
+		return new ArrayList<>(stations);
 	}
 
 	@Override
 	public Iterator<Station> iterator() {
 		return stations.iterator();
+	}
+
+	public Station getKosice() {
+		return getByName("Košice");
 	}
 }

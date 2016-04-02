@@ -1,4 +1,4 @@
-package sk.upjs.ics.shmuscraper;
+package sk.upjs.ics.utilities;
 
 public class StringUtilities {
 
@@ -33,5 +33,9 @@ public class StringUtilities {
 			return null;
 
 		return s;
+	}
+
+	public static String removeNonBreakingSpaces(String s) {
+		return s.replaceAll("(^\\h*)|(\\h*$)", "");
 	}
 }
